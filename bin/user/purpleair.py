@@ -46,7 +46,7 @@ from weewx.drivers import AbstractDevice
 from weewx.engine import StdService
 import weewx.units
 
-VERSION = "0.1"
+WEEWX_PURPLEAIR_VERSION = "0.1"
 
 if weewx.__version__ < "3":
     raise weewx.UnsupportedFeature("weewx 3 is required, found %s" %
@@ -129,7 +129,7 @@ class PurpleAirMonitor(StdService):
 
     def __init__(self, engine, config_dict):
         super(PurpleAirMonitor, self).__init__(engine, config_dict)
-        loginf("service version is %s" % VERSION)
+        loginf("service version is %s" % WEEWX_PURPLEAIR_VERSION)
 
         self.config_dict = config_dict.get('PurpleAirMonitor', {})
         try:
