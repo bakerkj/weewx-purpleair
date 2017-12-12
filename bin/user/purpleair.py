@@ -1,4 +1,3 @@
-# $Id: cmon.py 1651 2017-01-16 18:10:37Z mwall $
 # Copyright 2017 Kenneth Baker
 """weewx module that records PurpleAir air quality data.
 
@@ -52,16 +51,17 @@ if weewx.__version__ < "3":
     raise weewx.UnsupportedFeature("weewx 3 is required, found %s" %
                                    weewx.__version__)
 
+# set up appropriate units
 weewx.units.USUnits['group_concentration'] = 'microgram_per_meter_cubed'
 weewx.units.MetricUnits['group_concentration'] = 'microgram_per_meter_cubed'
 weewx.units.MetricWXUnits['group_concentration'] = 'microgram_per_meter_cubed'
 weewx.units.default_unit_format_dict['microgram_per_meter_cubed'] = '%.3f'
 weewx.units.default_unit_label_dict['microgram_per_meter_cubed']  = ' \xc2\xb5g/m\xc2\xb3'
 
+# assign types of units to specific measurements
 weewx.units.obs_group_dict['purple_temperature'] = 'group_temperature'
 weewx.units.obs_group_dict['purple_humidity'] = 'group_percent'
 weewx.units.obs_group_dict['purple_pressure'] = 'group_pressure'
-
 weewx.units.obs_group_dict['pm1_0_cf_1'] = 'group_concentration'
 weewx.units.obs_group_dict['pm1_0_atm'] = 'group_concentration'
 weewx.units.obs_group_dict['pm2_5_cf_1'] = 'group_concentration'
@@ -69,6 +69,7 @@ weewx.units.obs_group_dict['pm2_5_atm'] = 'group_concentration'
 weewx.units.obs_group_dict['pm10_0_cf_1'] = 'group_concentration'
 weewx.units.obs_group_dict['pm10_0_atm'] = 'group_concentration'
 
+# our schema
 schema = [
     ('dateTime', 'INTEGER NOT NULL PRIMARY KEY'),
     ('usUnits', 'INTEGER NOT NULL'),
@@ -99,6 +100,7 @@ def logerr(msg):
 
 
 def collect_data(session, hostname, timeout, now_ts = None):
+    # used for testing
     if now_ts is None:
         now_ts = int(time.time() + 0.5)
 
@@ -106,21 +108,27 @@ def collect_data(session, hostname, timeout, now_ts = None):
     record['dateTime'] = now_ts
     record['usUnits'] = weewx.US
 
+    # fetch data
     r = session.get(url="http://%s/json" % (hostname), timeout=timeout)
+    # raise error if status is invalid
     r.raise_for_status()
+    # convert to json
     j = r.json()
 
+    # put items into record
     record['purple_temperature'] = j['current_temp_f']
     record['purple_humidity'] = j['current_humidity']
     record['purple_dewpoint'] = j['current_dewpoint_f']
 
+    # convert pressure from mbar to US units.
     # FIXME: is there a cleaner way to do this
     pressure, units, group = weewx.units.convertStd((j['pressure'], 'mbar', 'group_pressure'), weewx.US)
     record['purple_pressure'] = pressure
 
-    # for each partical concentration counter grab the average of the A and B channels and push into the record
+    # for each concentration counter grab the average of the A and B channels and push into the record
     for key in ['pm1_0_cf_1', 'pm1_0_atm', 'pm2_5_cf_1', 'pm2_5_atm', 'pm10_0_cf_1', 'pm10_0_atm']:
         record[key] = (j[key] + j[key + '_b']) / 2.0
+
     return record
 
 
@@ -155,7 +163,9 @@ class PurpleAirMonitor(StdService):
             raise Exception('purpleair schema mismatch: %s != %s' % (dbcol, memcol))
 
         self.last_ts = None
+        # listen for NEW_ARCHIVE_RECORDS
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
+        # create a session
         self.session = requests.Session()
 
     def shutDown(self):
