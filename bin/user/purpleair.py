@@ -1,6 +1,8 @@
 # Copyright 2017 Kenneth Baker
 """weewx module that records PurpleAir air quality data.
 
+This is directly modeled after the weewx cmon plugin by Matthew Wall.
+
 This file contains a weewx service.
 
 Installation
@@ -32,7 +34,6 @@ Add the following to weewx.conf:
 
 # FIXME: ...
 
-from __future__ import with_statement
 import os
 import syslog
 import time
@@ -41,7 +42,6 @@ import configobj
 
 import weewx
 import weeutil.weeutil
-from weewx.drivers import AbstractDevice
 from weewx.engine import StdService
 import weewx.units
 
