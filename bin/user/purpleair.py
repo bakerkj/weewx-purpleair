@@ -200,7 +200,7 @@ class PurpleAirMonitor(StdService):
         self.dbm.addRecord(record)
 
     def get_data(self, now_ts, last_ts):
-        record = collect_data(self.session, self.config_dict['hostname'], self.config_dict['timeout'], now_ts)
+        record = collect_data(self.session, self.config_dict['hostname'], weeutil.weeutil.to_int(self.config_dict['timeout']), now_ts)
         record['interval'] = max(1, int((now_ts - last_ts) / 60))
         return record
 
