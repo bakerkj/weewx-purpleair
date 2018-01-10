@@ -1,4 +1,4 @@
-# Copyright 2017 Ken Baker
+# Copyright 2018 Ken Baker
 
 from setup import ExtensionInstaller
 

@@ -1,4 +1,4 @@
-# Copyright 2017 Kenneth Baker
+# Copyright 2018 Kenneth Baker
 """weewx module that records PurpleAir air quality data.
 
 This is directly modeled after the weewx cmon plugin by Matthew Wall.

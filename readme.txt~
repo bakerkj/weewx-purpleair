@@ -1,0 +1,40 @@
+purpleair - collect Purple Air air quality data
+Copyright 2018 - Kenneth Baker
+
+purpleair is a weewx extension to collect data from the local
+interface of a Purple Air air sensor (https://www.purpleair.com/). It
+saves this data to its own database which can then be displayed in
+weewx reports.
+
+
+1) run the installer (from the git clone):
+  wee_extension --install . 
+
+2) restart weewx:
+
+sudo /etc/init.d/weewx stop
+sudo /etc/init.d/weewx start
+
+
+This will install the purpleair.py extension into the weewx/user/
+directory.  It will also add the necessary data bindings, hostname,
+database, and service configuration to the weewx.conf configuration
+file.
+
+Something like the following:
+  [PurpleAirMonitor]
+    data_binding = purpleair_binding
+    hostname = purple-air
+  [DataBindings]
+    [[purpleair_binding]]
+        database = purpleair_sqlite
+        manager = weewx.manager.DaySummaryManager
+        table_name = archive
+        schema = user.purpleair.schema
+
+  [Databases]
+    [[purpleair_sqlite]]
+        database_name = purpleair.sdb
+        driver = weedb.sqlite
+
+
