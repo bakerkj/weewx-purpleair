@@ -264,43 +264,44 @@ if __name__ == "__main__":
 
     def test_service(hostname):
         from weewx.engine import StdEngine
-        config = configobj.ConfigObj({
-            'Station': {
-                'station_type': 'Simulator',
-                'altitude': [0, 'foot'],
-                'latitude': 0,
-                'longitude': 0},
-            'Simulator': {
-                'driver': 'weewx.drivers.simulator',
-                'mode': 'simulator'},
-            'PurpleAirMonitor': {
-                'binding': 'purpleair_binding',
-                'hostname': hostname},
-            'DataBindings': {
-                'purpleair_binding': {
-                    'database': 'purpleair_sqlite',
-                    'manager': 'weewx.manager.DaySummaryManager',
-                    'table_name': 'archive',
-                    'schema': 'user.purpleair.schema'}},
-            'Databases': {
-                'purpleair_sqlite': {
-                    'root': '%(WEEWX_ROOT)s',
-                    'database_name': '/tmp/purpleair.sdb',
-                    'driver': 'weedb.sqlite'}},
-            'Engine': {
-                'Services': {
-                    'archive_services': 'user.purpleair.PurpleAirMonitor'}}})
-        engine = StdEngine(config)
-        svc = PurpleAirMonitor(engine, config)
-        for _ in range(4):
-            record = {
-                'dateTime': int(time.time()),
-                'interval': 1
-            }
-            event = weewx.Event(weewx.NEW_ARCHIVE_RECORD, record=record)
-            svc.new_archive_record(event)
+        from tempfile import NamedTemporaryFile
 
-            time.sleep(5)
-        os.remove('/tmp/purpleair.sdb')
+        with NamedTemporaryFile() as temp_file:
+            config = configobj.ConfigObj({
+                'Station': {
+                    'station_type': 'Simulator',
+                    'altitude': [0, 'foot'],
+                    'latitude': 0,
+                    'longitude': 0},
+                'Simulator': {
+                    'driver': 'weewx.drivers.simulator',
+                    'mode': 'simulator'},
+                'PurpleAirMonitor': {
+                    'binding': 'purpleair_binding',
+                    'hostname': hostname},
+                'DataBindings': {
+                    'purpleair_binding': {
+                        'database': 'purpleair_sqlite',
+                        'manager': 'weewx.manager.DaySummaryManager',
+                        'table_name': 'archive',
+                        'schema': 'user.purpleair.schema'}},
+                'Databases': {
+                    'purpleair_sqlite': {
+                        'root': '%(WEEWX_ROOT)s',
+                        'database_name': temp_file.name,
+                        'driver': 'weedb.sqlite'}},
+                'Engine': {
+                    'Services': {
+                        'archive_services': 'user.purpleair.PurpleAirMonitor'}}})
+            engine = StdEngine(config)
+            svc = PurpleAirMonitor(engine, config)
+            for _ in range(4):
+                record = {
+                    'dateTime': int(time.time()),
+                    'interval': 1
+                }
+                event = weewx.Event(weewx.NEW_ARCHIVE_RECORD, record=record)
+                svc.new_archive_record(event)
 
+                time.sleep(5)
     main()
