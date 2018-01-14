@@ -1,5 +1,5 @@
-purpleair - collect Purple Air air quality data
-Copyright 2018 - Kenneth Baker
+Purple Air - collect Purple Air air quality data
+Copyright 2018 - Kenneth Baker <bakerkj@umich.edu>
 
 purpleair is a weewx extension to collect data from the local
 interface of a Purple Air air sensor (https://www.purpleair.com/). It
@@ -24,7 +24,7 @@ file.
 Something like the following:
   [PurpleAirMonitor]
     data_binding = purpleair_binding
-    hostname = purple-air
+    hostname = purple-air.example.com
   [DataBindings]
     [[purpleair_binding]]
         database = purpleair_sqlite

@@ -1,4 +1,4 @@
-# Copyright 2018 Kenneth Baker
+# Copyright 2018 Kenneth Baker <bakerkj@umich.edu>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -15,7 +15,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 """weewx module that records PurpleAir air quality data.
-This is directly modeled after the weewx cmon plugin by Matthew Wall.
+
+This is directly modeled after the weewx cmon plugin
+(https://github.com/weewx/weewx/wiki/cmon) by Matthew Wall.
 
 This file contains a weewx service.
 
@@ -30,7 +32,7 @@ Add the following to weewx.conf:
 
 [PurpleAirMonitor]
     data_binding = purpleair_binding
-    hostname = purple-air.test.com
+    hostname = purple-air.example.com
 [DataBindings]
     [[purpleair_binding]]
         database = purpleair_sqlite
