@@ -13,7 +13,7 @@ class PurpleAirMonitorInstaller(ExtensionInstaller):
             description='Collect Purple Air air quality data.',
             author="Kenneth Baker",
             author_email="bakerkj@umich.edu",
-            process_services='user.cmon.PurpleAirMonitor',
+            process_services='user.purpleair.PurpleAirMonitor',
             config={
                 'PurpleAirMonitor': {
                     'data_binding': 'purpleair_binding',
