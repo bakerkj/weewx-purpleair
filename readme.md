@@ -12,7 +12,7 @@ saved at the archive interval of the station.
 ## Prerequisites
 
 1) Purpleair requires the _requests_ Python library. This library does not
-   come with the default installation of Python. It mus be installed
+   come with the default installation of Python. It must be installed
    separately. Perhaps the fastest way to do so is to run:
 
     pip install requests
