@@ -17,6 +17,10 @@ saved at the archive interval of the station.
 
     pip install requests
 
+    or on a debian/ubuntu system run:
+
+    apt install python-requests
+
 ## Installation
 
 1) run the installer (from the git directory):
