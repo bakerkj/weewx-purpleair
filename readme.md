@@ -9,6 +9,14 @@ interface of a Purple Air air sensor
 which can then be displayed in weewx reports and graphs.  The data is
 saved at the archive interval of the station.
 
+## Prerequisites
+
+1) Purpleair requires the _requests_ Python library. This library does not
+   come with the default installation of Python. It must be installed
+   separately. Perhaps the fastest way to do so is to run:
+
+    pip install requests
+
 ## Installation
 
 1) run the installer (from the git directory):
