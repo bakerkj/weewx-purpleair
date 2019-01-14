@@ -132,14 +132,18 @@ def collect_data(session, hostname, timeout, now_ts = None):
     j = r.json()
 
     # put items into record
-    record['purple_temperature'] = j['current_temp_f']
-    record['purple_humidity'] = j['current_humidity']
-    record['purple_dewpoint'] = j['current_dewpoint_f']
+    if j.has_key('current_temp_f'):
+        record['purple_temperature'] = j['current_temp_f']
+    if j.has_key('current_humidity'):
+        record['purple_humidity'] = j['current_humidity']
+    if j.has_key('current_dewpoint_f'):
+        record['purple_dewpoint'] = j['current_dewpoint_f']
 
     # convert pressure from mbar to US units.
     # FIXME: is there a cleaner way to do this
-    pressure, units, group = weewx.units.convertStd((j['pressure'], 'mbar', 'group_pressure'), weewx.US)
-    record['purple_pressure'] = pressure
+    if j.has_key('pressure'):
+        pressure, units, group = weewx.units.convertStd((j['pressure'], 'mbar', 'group_pressure'), weewx.US)
+        record['purple_pressure'] = pressure
 
     # for each concentration counter grab the average of the A and B channels and push into the record
     for key in ['pm1_0_cf_1', 'pm1_0_atm', 'pm2_5_cf_1', 'pm2_5_atm', 'pm10_0_cf_1', 'pm10_0_atm']:
