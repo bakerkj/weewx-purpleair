@@ -151,7 +151,7 @@ def collect_data(session, hostname, timeout, now_ts = None):
         missed.append('pressure')
 
     if missed:
-        loginf('sensor didn\'t report field(s): %s' % missed.join(','))
+        loginf('sensor didn\'t report field(s): %s' % ','.join(missed))
 
     # for each concentration counter grab the average of the A and B channels and push into the record
     for key in ['pm1_0_cf_1', 'pm1_0_atm', 'pm2_5_cf_1', 'pm2_5_atm', 'pm10_0_cf_1', 'pm10_0_atm']:
