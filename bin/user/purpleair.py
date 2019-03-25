@@ -74,7 +74,7 @@ weewx.units.MetricWXUnits['group_concentration'] = 'microgram_per_meter_cubed'
 weewx.units.default_unit_format_dict['microgram_per_meter_cubed'] = '%.3f'
 weewx.units.default_unit_label_dict['microgram_per_meter_cubed']  = ' \xc2\xb5g/m\xc2\xb3'
 
-# setup for wireless unit (hack and only used for labling)
+# setup for wireless unit (hack and only used for labeling)
 weewx.units.USUnits['group_decibels'] = 'decibels'
 weewx.units.MetricUnits['group_concentration'] = 'decibels'
 weewx.units.MetricWXUnits['group_decibels'] = 'decibels'
