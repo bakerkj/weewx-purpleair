@@ -74,10 +74,19 @@ weewx.units.MetricWXUnits['group_concentration'] = 'microgram_per_meter_cubed'
 weewx.units.default_unit_format_dict['microgram_per_meter_cubed'] = '%.3f'
 weewx.units.default_unit_label_dict['microgram_per_meter_cubed']  = ' \xc2\xb5g/m\xc2\xb3'
 
+# setup for wireless unit (hack and only used for labeling)
+weewx.units.USUnits['group_decibels'] = 'decibels'
+weewx.units.MetricUnits['group_concentration'] = 'decibels'
+weewx.units.MetricWXUnits['group_decibels'] = 'decibels'
+weewx.units.default_unit_format_dict['decibels'] = '%.1f'
+weewx.units.default_unit_label_dict['decibels']  = ' dBm'
+
 # assign types of units to specific measurements
 weewx.units.obs_group_dict['purple_temperature'] = 'group_temperature'
 weewx.units.obs_group_dict['purple_humidity'] = 'group_percent'
 weewx.units.obs_group_dict['purple_pressure'] = 'group_pressure'
+weewx.units.obs_group_dict['purple_rssi'] = 'group_decibels'
+weewx.units.obs_group_dict['purple_uptime'] = 'group_deltatime'
 weewx.units.obs_group_dict['pm1_0_cf_1'] = 'group_concentration'
 weewx.units.obs_group_dict['pm1_0_atm'] = 'group_concentration'
 weewx.units.obs_group_dict['pm2_5_cf_1'] = 'group_concentration'
@@ -94,6 +103,8 @@ schema = [
     ('purple_humidity','REAL'),
     ('purple_dewpoint','REAL'),
     ('purple_pressure','REAL'),
+    ('purple_rssi','REAL'),
+    ('purple_uptime','REAL'),
     ('pm1_0_cf_1','REAL'),
     ('pm1_0_atm','REAL'),
     ('pm2_5_cf_1','REAL'),
@@ -135,6 +146,9 @@ def collect_data(session, hostname, timeout, now_ts = None):
     record['purple_temperature'] = j['current_temp_f']
     record['purple_humidity'] = j['current_humidity']
     record['purple_dewpoint'] = j['current_dewpoint_f']
+    record['purple_rssi'] = j['rssi']
+    record['purple_uptime'] = j['uptime']
+
 
     # convert pressure from mbar to US units.
     # FIXME: is there a cleaner way to do this
