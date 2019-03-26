@@ -86,6 +86,7 @@ weewx.units.obs_group_dict['purple_temperature'] = 'group_temperature'
 weewx.units.obs_group_dict['purple_humidity'] = 'group_percent'
 weewx.units.obs_group_dict['purple_pressure'] = 'group_pressure'
 weewx.units.obs_group_dict['purple_rssi'] = 'group_decibels'
+weewx.units.obs_group_dict['purple_uptime'] = 'group_time'
 weewx.units.obs_group_dict['pm1_0_cf_1'] = 'group_concentration'
 weewx.units.obs_group_dict['pm1_0_atm'] = 'group_concentration'
 weewx.units.obs_group_dict['pm2_5_cf_1'] = 'group_concentration'
@@ -103,6 +104,7 @@ schema = [
     ('purple_dewpoint','REAL'),
     ('purple_pressure','REAL'),
     ('purple_rssi','REAL'),
+    ('purple_uptime','REAL'),
     ('pm1_0_cf_1','REAL'),
     ('pm1_0_atm','REAL'),
     ('pm2_5_cf_1','REAL'),
@@ -145,6 +147,8 @@ def collect_data(session, hostname, timeout, now_ts = None):
     record['purple_humidity'] = j['current_humidity']
     record['purple_dewpoint'] = j['current_dewpoint_f']
     record['purple_rssi'] = j['rssi']
+    record['purple_uptime'] = j['uptime']
+
 
     # convert pressure from mbar to US units.
     # FIXME: is there a cleaner way to do this
