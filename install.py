@@ -17,7 +17,8 @@ class PurpleAirMonitorInstaller(ExtensionInstaller):
             config={
                 'PurpleAirMonitor': {
                     'data_binding': 'purpleair_binding',
-                    'hostname': 'purple-air' },
+                    'hostname': 'purple-air',
+                    'port': '80'},
                 'DataBindings': {
                     'purpleair_binding': {
                         'database': 'purpleair_sqlite',

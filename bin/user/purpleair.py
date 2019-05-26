@@ -33,6 +33,7 @@ Add the following to weewx.conf:
 [PurpleAirMonitor]
     data_binding = purpleair_binding
     hostname = purple-air.example.com
+    port = 80
 [DataBindings]
     [[purpleair_binding]]
         database = purpleair_sqlite
@@ -115,7 +116,7 @@ def logerr(msg):
     logmsg(syslog.LOG_ERR, msg)
 
 
-def collect_data(session, hostname, timeout, now_ts = None):
+def collect_data(session, hostname, port, timeout, now_ts = None):
     # used for testing
     if now_ts is None:
         now_ts = int(time.time() + 0.5)
@@ -125,7 +126,7 @@ def collect_data(session, hostname, timeout, now_ts = None):
     record['usUnits'] = weewx.US
 
     # fetch data
-    r = session.get(url="http://%s/json" % (hostname), timeout=timeout)
+    r = session.get(url="http://%s:%s/json" % (hostname, port), timeout=timeout)
     # raise error if status is invalid
     r.raise_for_status()
     # convert to json
@@ -161,6 +162,7 @@ class PurpleAirMonitor(StdService):
         except KeyError, e:
             raise Exception("Data will not be posted: Missing option %s" % e)
 
+        self.config_dict.setdefault('port', 80) # default port is HTTP
         self.config_dict.setdefault('timeout', 10) # url fetch timeout
 
         # get the database parameters we need to function
@@ -216,7 +218,10 @@ class PurpleAirMonitor(StdService):
         self.dbm.addRecord(record)
 
     def get_data(self, now_ts, last_ts):
-        record = collect_data(self.session, self.config_dict['hostname'], weeutil.weeutil.to_int(self.config_dict['timeout']), now_ts)
+        record = collect_data(self.session, self.config_dict['hostname'],
+                              weeutil.weeutil.to_int(self.config_dict['port']),
+                              weeutil.weeutil.to_int(self.config_dict['timeout']),
+                              now_ts)
         record['interval'] = max(1, int((now_ts - last_ts) / 60))
         return record
 
@@ -243,6 +248,9 @@ if __name__ == "__main__":
                           help='test the data collector')
         parser.add_option('--hostname', dest='hostname', action='store',
                           help='hostname to use with --test-collector')
+        parser.add_option('--port', dest='port', action='store',
+                          default='80',
+                          help="port to use with --test-collector. Default is '80'")
         parser.add_option('--test-service', dest='ts', action='store_true',
                           help='test the service')
         (options, args) = parser.parse_args()
@@ -256,13 +264,13 @@ if __name__ == "__main__":
                 parser.error("--test-service requires --hostname argument")
             test_service(options.hostname)
 
-    def test_collector(hostname):
+    def test_collector(hostname, port):
         session = requests.Session()
         while True:
-            print collect_data(session, hostname, 10)
+            print collect_data(session, hostname, int(port), 10)
             time.sleep(5)
 
-    def test_service(hostname):
+    def test_service(hostname, port):
         from weewx.engine import StdEngine
         from tempfile import NamedTemporaryFile
 
@@ -278,7 +286,8 @@ if __name__ == "__main__":
                     'mode': 'simulator'},
                 'PurpleAirMonitor': {
                     'binding': 'purpleair_binding',
-                    'hostname': hostname},
+                    'hostname': hostname,
+                    'port': port},
                 'DataBindings': {
                     'purpleair_binding': {
                         'database': 'purpleair_sqlite',

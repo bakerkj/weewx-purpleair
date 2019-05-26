@@ -1,3 +1,6 @@
+.3.1 20190524
+* Add in ability to specify a port number, default being 80
+
 0.3 20180116
 * remove cmon reference from installer
 
