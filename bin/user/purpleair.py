@@ -100,7 +100,7 @@ schema = [
     ('pm2_5_atm','REAL'),
     ('pm10_0_cf_1','REAL'),
     ('pm10_0_atm','REAL'),
-    ('aqi2_5','INTEGER NOT NULL'),
+    ('aqi2_5','INTEGER'),
     ]
 
 def logmsg(level, msg):
