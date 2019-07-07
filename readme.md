@@ -34,14 +34,15 @@ saved at the archive interval of the station.
 
 This will install the purpleair.py extension into the weewx/user/
 directory.  It will also add the necessary data bindings, hostname,
-database, and service configuration to the weewx.conf configuration
-file.
+port number, database, and service configuration to the weewx.conf
+configuration file.
 
 Something like the following:
 
     [PurpleAirMonitor]
         data_binding = purpleair_binding
         hostname = purple-air.example.com
+        port = 80
     [DataBindings]
         [[purpleair_binding]]
             database = purpleair_sqlite
