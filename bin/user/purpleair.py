@@ -114,11 +114,6 @@ def loginf(msg):
 def logerr(msg):
     logmsg(syslog.LOG_ERR, msg)
 
-def get(d, key, missings):
-    v = d.get(key, None)
-    if v is None:
-        missings.append(key)
-    return v, missings
 
 def collect_data(session, hostname, timeout, now_ts = None):
     # used for testing
@@ -138,20 +133,27 @@ def collect_data(session, hostname, timeout, now_ts = None):
 
     # put items into record
     missed = []
-    record['purple_temperature'], missed = get(j, 'current_temp_f', missed)
-    record['purple_humidity'], missed = get(j, 'current_humidity', missed)
-    record['purple_dewpoint'], missed = get(j, 'current_dewpoint_f', missed)
 
-    # convert pressure from mbar to US units.
-    # FIXME: is there a cleaner way to do this
-    if j.has_key('pressure'):
-        pressure, units, group = weewx.units.convertStd((j['pressure'], 'mbar', 'group_pressure'), weewx.US)
+    def get_and_update_missed(key):
+        if key in j:
+            return j[key]
+        else:
+            missed.append(key)
+            return None
+
+    record['purple_temperature'] = get_and_update_missed('current_temp_f')
+    record['purple_humidity'] = get_and_update_missed('current_humidity')
+    record['purple_dewpoint'] = get_and_update_missed('current_dewpoint_f')
+    
+    pressure = get_and_update_missed('pressure')
+    if pressure is not None:
+        # convert pressure from mbar to US units.
+        # FIXME: is there a cleaner way to do this
+        pressure, units, group = weewx.units.convertStd((pressure, 'mbar', 'group_pressure'), weewx.US)
         record['purple_pressure'] = pressure
-    else:
-        missed.append('pressure')
 
     if missed:
-        loginf('sensor didn\'t report field(s): %s' % ','.join(missed))
+        loginf("sensor didn't report field(s): %s" % ','.join(missed))
 
     # for each concentration counter grab the average of the A and B channels and push into the record
     for key in ['pm1_0_cf_1', 'pm1_0_atm', 'pm2_5_cf_1', 'pm2_5_atm', 'pm10_0_cf_1', 'pm10_0_atm']:
