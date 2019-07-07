@@ -34,6 +34,7 @@ Add the following to weewx.conf:
     data_binding = purpleair_binding
     hostname = purple-air.example.com
     port = 80
+
 [DataBindings]
     [[purpleair_binding]]
         database = purpleair_sqlite
@@ -263,7 +264,7 @@ if __name__ == "__main__":
         parser.add_option('--hostname', dest='hostname', action='store',
                           help='hostname to use with --test-collector')
         parser.add_option('--port', dest='port', action='store',
-                          default='80',
+                          type=int, default=80,
                           help="port to use with --test-collector. Default is '80'")
         parser.add_option('--test-service', dest='ts', action='store_true',
                           help='test the service')
@@ -281,7 +282,7 @@ if __name__ == "__main__":
     def test_collector(hostname, port):
         session = requests.Session()
         while True:
-            print collect_data(session, hostname, int(port), 10)
+            print collect_data(session, hostname, port, 10)
             time.sleep(5)
 
     def test_service(hostname, port):
