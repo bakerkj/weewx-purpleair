@@ -2,6 +2,8 @@
 
 Copyright 2018 - Kenneth Baker <bakerkj@umich.edu>
 
+(vds fork to add AQI calculation)
+
 ## What is it?
 purpleair is a weewx extension to collect data from the local
 interface of a Purple Air air sensor
@@ -96,12 +98,16 @@ pm2_5_cf_1
 pm2_5_atm
 pm10_0_cf_1
 pm10_0_atm
+aqi2_5
 ```
 
 ### Notes
 
 The `pm*_*` values stored in the database are averages from the two
 sensors contained in the sensor.
+
+The `aqi2_5` value stored in the database is calculated from the average
+of the two pm2_5_cf_1 sensors contained in the sensor.  See the code for details.
 
 More details about these values can be found in the document referred
 to here <https://groups.google.com/d/msg/weewx-user/hzN9K3QH7kU/v4ETARANBQAJ>.

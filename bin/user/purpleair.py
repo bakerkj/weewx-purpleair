@@ -102,6 +102,7 @@ schema = [
     ('pm2_5_atm','REAL'),
     ('pm10_0_cf_1','REAL'),
     ('pm10_0_atm','REAL'),
+    ('aqi2_5','INTEGER'),
     ]
 
 def logmsg(level, msg):
@@ -116,6 +117,32 @@ def loginf(msg):
 def logerr(msg):
     logmsg(syslog.LOG_ERR, msg)
 
+# the various ranges of AQI vs. pm2_5 observations
+# ref: https://www.airnow.gov/index.cfm?action=aqibasics.aqi
+AQImapping = {
+   "green" : { 'AQImin':   0, 'AQImax':  50, 'PMmin':   0  , 'PMmax':  15.4, 'Category': "Good"                           },
+   "yellow": { 'AQImin':  51, 'AQImax': 100, 'PMmin':  15.5, 'PMmax':  40.4, 'Category': "Moderate"                       },
+   "orange": { 'AQImin': 101, 'AQImax': 150, 'PMmin':  40.5, 'PMmax':  65.4, 'Category': "Unhealthy for Sensitive Groups" },
+   "red"   : { 'AQImin': 151, 'AQImax': 200, 'PMmin':  65.5, 'PMmax': 150.5, 'Category': "Unhealthy"                      },
+   "purple": { 'AQImin': 201, 'AQImax': 300, 'PMmin': 150.5, 'PMmax': 250.4, 'Category': "Very Unhealthy"                 },
+   "maroon": { 'AQImin': 301, 'AQImax': 500, 'PMmin': 250.5, 'PMmax': 500.4, 'Category': "Hazardous"                      },
+}
+
+# the mapping matching this particular observation is later used by calculateAQI() below
+def lookUpColor(PMobs):
+  for mapping in AQImapping:
+    if (PMobs >= AQImapping[mapping]['PMmin']) and (PMobs <= AQImapping[mapping]['PMmax'] ):
+        return (mapping,AQImapping[mapping])
+
+# calculate AQI based on passed in values for that color range ---
+#    PMobs  = current observation of PM2.5 in micrograms per cubic liter
+#    PMmin  = concentration breakpoint that is <= PMobs
+#    PMmax  = concentration breakpoint that is >= PMobs
+#    AQImin = index breakpoint corresponding to PMmin
+#    AQImax = index breakpoint corresponding to PMmax
+def calculateAQI(PMobs,PMmin,PMmax,AQImin,AQImax):
+    AQI = ( ( ( ( PMobs - PMmin ) * ( AQImax - AQImin ) ) / ( PMmax - PMmin) ) + AQImin )
+    return int(AQI)
 
 def collect_data(session, hostname, port, timeout, now_ts = None):
     # used for testing
@@ -161,8 +188,29 @@ def collect_data(session, hostname, port, timeout, now_ts = None):
     for key in ['pm1_0_cf_1', 'pm1_0_atm', 'pm2_5_cf_1', 'pm2_5_atm', 'pm10_0_cf_1', 'pm10_0_atm']:
         record[key] = (j[key] + j[key + '_b']) / 2.0
 
-    return record
+    # calculate AQI based on average observed data from the sensors
+    # and the mapping ranges that match this particular observation
+    PMobs=record['pm2_5_cf_1']
+    try:
+        (color,mapping) = lookUpColor(PMobs)
+    except:
+        # hopefully this will return null for AQI if we got bad data outside a known range
+        logdbg("purpleair - cannot find mapping for pm2_5_cf_1 = %s" % record['pm2_5_cf_1'])
+        return record
 
+    # we should only get here if we can map the PMobs to a color range
+    PMmax    = mapping['PMmax']
+    PMmin    = mapping['PMmin']
+    AQImax   = mapping['AQImax']
+    AQImin   = mapping['AQImin']
+    Category = mapping['Category']
+    AQIcalc = calculateAQI(PMobs, PMmin, PMmax, AQImin, AQImax)
+    record['aqi2_5'] = AQIcalc
+
+    # this could be a logdbg() message for high levels of debugging potentially
+    #####print("color:",color,", PMobs:",PMobs,", AQI:",AQIcalc,", Category:",Category)
+
+    return record
 
 class PurpleAirMonitor(StdService):
     """Collect Purple Air air quality measurements."""
