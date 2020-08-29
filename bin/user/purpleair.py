@@ -32,7 +32,7 @@ Add the following to weewx.conf:
 
 [PurpleAirMonitor]
     data_binding = purpleair_binding
-    hostname = purple-air.example.com
+    hostname = <URL of purpleair sensor> OR <ID# of purpleair sensor>
     port = 80
 
 [DataBindings]
@@ -127,25 +127,37 @@ def collect_data(session, hostname, port, timeout, now_ts = None):
     record['usUnits'] = weewx.US
 
     # fetch data
-    r = session.get(url="http://%s:%s/json" % (hostname, port), timeout=timeout)
+    if hostname.isnumeric():
+        r = session.get(url="https://www.purpleair.com/json?show=%s" % (hostname), timeout=timeout)
+    else:
+        r = session.get(url="http://%s:%s/json" % (hostname, port), timeout=timeout)
     # raise error if status is invalid
     r.raise_for_status()
     # convert to json
-    j = r.json()
+    if hostname.isnumeric():
+        rj = r.json()
+        j = rj['results'][0]
+        k = rj['results'][1]
+    else:
+        j = r.json()
 
     # put items into record
     missed = []
 
     def get_and_update_missed(key):
         if key in j:
-            return j[key]
+            return float(j[key])
         else:
             missed.append(key)
             return None
 
-    record['purple_temperature'] = get_and_update_missed('current_temp_f')
-    record['purple_humidity'] = get_and_update_missed('current_humidity')
-    record['purple_dewpoint'] = get_and_update_missed('current_dewpoint_f')
+    if hostname.isnumeric():
+        record['purple_temperature'] = get_and_update_missed('temp_f')
+        record['purple_humidity'] = get_and_update_missed('humidity')
+    else:
+        record['purple_temperature'] = get_and_update_missed('current_temp_f')
+        record['purple_humidity'] = get_and_update_missed('current_humidity')
+        record['purple_dewpoint'] = get_and_update_missed('current_dewpoint_f')
     
     pressure = get_and_update_missed('pressure')
     if pressure is not None:
@@ -159,8 +171,18 @@ def collect_data(session, hostname, port, timeout, now_ts = None):
 
     # for each concentration counter grab the average of the A and B channels and push into the record
     for key in ['pm1_0_cf_1', 'pm1_0_atm', 'pm2_5_cf_1', 'pm2_5_atm', 'pm10_0_cf_1', 'pm10_0_atm']:
-        record[key] = (j[key] + j[key + '_b']) / 2.0
-
+        if hostname.isnumeric():
+            valA = float(j[key])
+            valB = float(k[key])
+        else:
+            valA = float(j[key])
+            valB = float(j[key + '_b'])
+        if valA == 0.0 and valB != 0.0:
+            record[key] = valB
+        elif valB == 0.0 and valA != 0.0:
+            record[key] = valA
+        else:
+            record[key] = (valA + valB) / 2.0
     return record
 
 
