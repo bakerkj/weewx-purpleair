@@ -13,6 +13,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# -------
+#  vince notes - just pick AQI out of the JSON since it's
+#                available from the vendor now, no calculations needed
+#
+#    this uses a custom db and binding since the v4 weewx wview-extended
+#    schema does not have any fields for AQI unfortunately, although it
+#    does have places to store the raw input data.
+# -------
 
 """weewx module that records PurpleAir air quality data.
 
@@ -100,6 +109,7 @@ schema = [
     ('pm2_5_atm','REAL'),
     ('pm10_0_cf_1','REAL'),
     ('pm10_0_atm','REAL'),
+    ('aqi2_5','INTEGER NOT NULL'),
     ]
 
 def logmsg(level, msg):
@@ -113,7 +123,6 @@ def loginf(msg):
 
 def logerr(msg):
     logmsg(syslog.LOG_ERR, msg)
-
 
 def collect_data(session, hostname, timeout, now_ts = None):
     # used for testing
@@ -131,11 +140,6 @@ def collect_data(session, hostname, timeout, now_ts = None):
     # convert to json
     j = r.json()
 
-    # put items into record
-    record['purple_temperature'] = j['current_temp_f']
-    record['purple_humidity'] = j['current_humidity']
-    record['purple_dewpoint'] = j['current_dewpoint_f']
-
     # convert pressure from mbar to US units.
     # FIXME: is there a cleaner way to do this
     pressure, units, group = weewx.units.convertStd((j['pressure'], 'mbar', 'group_pressure'), weewx.US)
@@ -145,8 +149,19 @@ def collect_data(session, hostname, timeout, now_ts = None):
     for key in ['pm1_0_cf_1', 'pm1_0_atm', 'pm2_5_cf_1', 'pm2_5_atm', 'pm10_0_cf_1', 'pm10_0_atm']:
         record[key] = (j[key] + j[key + '_b']) / 2.0
 
-    return record
+    # put items we simply grab into record
+    record['purple_temperature'] = j['current_temp_f']
+    record['purple_humidity'] = j['current_humidity']
+    record['purple_dewpoint'] = j['current_dewpoint_f']
 
+    # this one has names that don't map so we do it specially
+    # rather than need to change our legacy schema to match
+    # the field names in the JSON
+    #
+
+    record['aqi2_5'] = ( j['pm2.5_aqi'] + j['pm2.5_aqi_b'] ) / 2.0
+
+    return record
 
 class PurpleAirMonitor(StdService):
     """Collect Purple Air air quality measurements."""
@@ -158,7 +173,7 @@ class PurpleAirMonitor(StdService):
         self.config_dict = config_dict.get('PurpleAirMonitor', {})
         try:
             self.config_dict['hostname']
-        except KeyError, e:
+        except KeyError as e:
             raise Exception("Data will not be posted: Missing option %s" % e)
 
         self.config_dict.setdefault('timeout', 10) # url fetch timeout
@@ -204,7 +219,7 @@ class PurpleAirMonitor(StdService):
         if self.last_ts is not None:
             try:
                 data = self.get_data(now, self.last_ts)
-            except Exception, e:
+            except Exception as e:
                 # failure to fetch data, log and then return
                 logerr(e)
                 return
@@ -259,7 +274,7 @@ if __name__ == "__main__":
     def test_collector(hostname):
         session = requests.Session()
         while True:
-            print collect_data(session, hostname, 10)
+            print(collect_data(session, hostname, 10))
             time.sleep(5)
 
     def test_service(hostname):
