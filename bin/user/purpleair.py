@@ -174,7 +174,7 @@ class PurpleAirMonitor(StdService):
         self.config_dict = config_dict.get('PurpleAirMonitor', {})
         try:
             self.config_dict['hostname']
-        except KeyError, e:
+        except KeyError as e:
             raise Exception("Data will not be posted: Missing option %s" % e)
 
         self.config_dict.setdefault('port', 80) # default port is HTTP
@@ -221,7 +221,7 @@ class PurpleAirMonitor(StdService):
         if self.last_ts is not None:
             try:
                 data = self.get_data(now, self.last_ts)
-            except Exception, e:
+            except Exception as e:
                 # failure to fetch data, log and then return
                 logerr(e)
                 return
@@ -282,7 +282,7 @@ if __name__ == "__main__":
     def test_collector(hostname, port):
         session = requests.Session()
         while True:
-            print collect_data(session, hostname, port, 10)
+            print (collect_data(session, hostname, port, 10))
             time.sleep(5)
 
     def test_service(hostname, port):
