@@ -122,6 +122,9 @@ def collect_data(session, hostname, port, timeout, now_ts = None):
     if now_ts is None:
         now_ts = int(time.time() + 0.5)
 
+    if not isinstance(hostname, unicode):
+        hostname = unicode(hostname)
+
     record = dict()
     record['dateTime'] = now_ts
     record['usUnits'] = weewx.US
