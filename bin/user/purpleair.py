@@ -125,24 +125,29 @@ def collect_data(session, hostname, port, timeout, now_ts = None):
     if not isinstance(hostname, unicode):
         hostname = unicode(hostname)
 
-    record = dict()
-    record['dateTime'] = now_ts
-    record['usUnits'] = weewx.US
-
-    # fetch data
+    # fetching data from www.purpleair.com
     if hostname.isnumeric():
         r = session.get(url="https://www.purpleair.com/json?show=%s" % (hostname), timeout=timeout)
+        is_data_from_purpleair_website = True
+
+    # fetching data from local device
     else:
         r = session.get(url="http://%s:%s/json" % (hostname, port), timeout=timeout)
+        is_data_from_purpleair_website = False
+
     # raise error if status is invalid
     r.raise_for_status()
     # convert to json
-    if hostname.isnumeric():
+    if is_data_from_purpleair_website:
         rj = r.json()
         j = rj['results'][0]
         k = rj['results'][1]
     else:
         j = r.json()
+
+    record = dict()
+    record['dateTime'] = now_ts
+    record['usUnits'] = weewx.US
 
     # put items into record
     missed = []
@@ -154,7 +159,7 @@ def collect_data(session, hostname, port, timeout, now_ts = None):
             missed.append(key)
             return None
 
-    if hostname.isnumeric():
+    if is_data_from_purpleair_website:
         record['purple_temperature'] = get_and_update_missed('temp_f')
         record['purple_humidity'] = get_and_update_missed('humidity')
     else:
@@ -174,7 +179,7 @@ def collect_data(session, hostname, port, timeout, now_ts = None):
 
     # for each concentration counter grab the average of the A and B channels and push into the record
     for key in ['pm1_0_cf_1', 'pm1_0_atm', 'pm2_5_cf_1', 'pm2_5_atm', 'pm10_0_cf_1', 'pm10_0_atm']:
-        if hostname.isnumeric():
+        if is_data_from_purpleair_website:
             valA = float(j[key])
             valB = float(k[key])
         else:
