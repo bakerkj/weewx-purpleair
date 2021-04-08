@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2018 Kenneth Baker <bakerkj@umich.edu>
 #
 # This program is free software; you can redistribute it and/or
@@ -52,8 +53,7 @@ Add the following to weewx.conf:
 
 # FIXME: ...
 
-import os
-import syslog
+import sys
 import time
 import requests
 import configobj
@@ -63,7 +63,15 @@ import weeutil.weeutil
 from weewx.engine import StdService
 import weewx.units
 
-WEEWX_PURPLEAIR_VERSION = "0.1"
+WEEWX_PURPLEAIR_VERSION = "0.4"
+
+PY3 = sys.version_info[0] == 3
+
+if PY3:
+    binary_type = bytes
+else:
+    binary_type = str
+
 
 if weewx.__version__ < "3":
     raise weewx.UnsupportedFeature("weewx 3 is required, found %s" %
@@ -74,7 +82,7 @@ weewx.units.USUnits['group_concentration'] = 'microgram_per_meter_cubed'
 weewx.units.MetricUnits['group_concentration'] = 'microgram_per_meter_cubed'
 weewx.units.MetricWXUnits['group_concentration'] = 'microgram_per_meter_cubed'
 weewx.units.default_unit_format_dict['microgram_per_meter_cubed'] = '%.3f'
-weewx.units.default_unit_label_dict['microgram_per_meter_cubed']  = ' \xc2\xb5g/m\xc2\xb3'
+weewx.units.default_unit_label_dict['microgram_per_meter_cubed']  = u'µg/m³',
 
 # assign types of units to specific measurements
 weewx.units.obs_group_dict['purple_temperature'] = 'group_temperature'
@@ -104,17 +112,37 @@ schema = [
     ('pm10_0_atm','REAL'),
     ]
 
-def logmsg(level, msg):
-    syslog.syslog(level, 'purpleair: %s' % msg)
 
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
+try:
+    # Test for new-style weewx logging by trying to import weeutil.logger
+    import weeutil.logger
+    import logging
+    log = logging.getLogger(__name__)
 
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
+    def logdbg(msg):
+        log.debug(msg)
 
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
+    def loginf(msg):
+        log.info(msg)
+
+    def logerr(msg):
+        log.error(msg)
+
+except ImportError:
+    # Old-style weewx logging
+    import syslog
+
+    def logmsg(level, msg):
+        syslog.syslog(level, 'purpleair: %s:' % msg)
+
+    def logdbg(msg):
+        logmsg(syslog.LOG_DEBUG, msg)
+
+    def loginf(msg):
+        logmsg(syslog.LOG_INFO, msg)
+
+    def logerr(msg):
+        logmsg(syslog.LOG_ERR, msg)
 
 
 def collect_data(session, hostname, port, timeout, now_ts = None):
@@ -122,8 +150,8 @@ def collect_data(session, hostname, port, timeout, now_ts = None):
     if now_ts is None:
         now_ts = int(time.time() + 0.5)
 
-    if not isinstance(hostname, unicode):
-        hostname = unicode(hostname)
+    if isinstance(hostname, binary_type):
+        hostname = hostname.decode('utf-8')
 
     # fetching data from www.purpleair.com
     if hostname.isnumeric():
@@ -281,8 +309,11 @@ if __name__ == "__main__":
 
     def main():
         import optparse
-        import weecfg
-        syslog.openlog('wee_purpleair', syslog.LOG_PID | syslog.LOG_CONS)
+        # WeeWX Version 3.x uses syslog, later versions use logging.
+        try:
+            syslog.openlog('wee_purpleair', syslog.LOG_PID | syslog.LOG_CONS)
+        except NameError:
+            pass
         parser = optparse.OptionParser(usage=usage)
         parser.add_option('--config', dest='cfgfn', type=str, metavar="FILE",
                           help="Use configuration file FILE. Default is /etc/weewx/weewx.conf or /home/weewx/weewx.conf")

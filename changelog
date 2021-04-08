@@ -1,3 +1,6 @@
+0.4 20210498
+* Ported to Python 3 and WeeWX V4.x. -tk
+
 0.3.1 20190524
 * Add in ability to specify a port number, default being 80
 

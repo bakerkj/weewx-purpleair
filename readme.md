@@ -63,11 +63,11 @@ the purpleair.sdb file.
 ### Examples:
 * The current value:
 
-```$latest('purpleair_binding').pm2_5_cf_1.formatted```
+```$latest('purpleair_binding').pm2_5_cf_1```
     
 * The maximum value today:
 
-```$day('purpleair_binding').pm2_5_cf_1.max.formatted```
+```$day('purpleair_binding').pm2_5_cf_1.max```
 
 * The time today when the maximum value occurred:
 

@@ -1,6 +1,6 @@
 # Copyright 2018 Ken Baker
 
-from setup import ExtensionInstaller
+from weecfg.extension import ExtensionInstaller
 
 def loader():
     return PurpleAirMonitorInstaller()
@@ -8,7 +8,7 @@ def loader():
 class PurpleAirMonitorInstaller(ExtensionInstaller):
     def __init__(self):
         super(PurpleAirMonitorInstaller, self).__init__(
-            version="0.1",
+            version="0.4",
             name='purpleair',
             description='Collect Purple Air air quality data.',
             author="Kenneth Baker",
