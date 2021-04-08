@@ -82,7 +82,7 @@ weewx.units.USUnits['group_concentration'] = 'microgram_per_meter_cubed'
 weewx.units.MetricUnits['group_concentration'] = 'microgram_per_meter_cubed'
 weewx.units.MetricWXUnits['group_concentration'] = 'microgram_per_meter_cubed'
 weewx.units.default_unit_format_dict['microgram_per_meter_cubed'] = '%.3f'
-weewx.units.default_unit_label_dict['microgram_per_meter_cubed']  = u'µg/m³',
+weewx.units.default_unit_label_dict['microgram_per_meter_cubed']  = u'µg/m³'
 
 # assign types of units to specific measurements
 weewx.units.obs_group_dict['purple_temperature'] = 'group_temperature'
