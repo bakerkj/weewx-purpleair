@@ -1,4 +1,4 @@
-# Copyright 2018 Ken Baker
+# Copyright 2021 Ken Baker
 
 from weecfg.extension import ExtensionInstaller
 
