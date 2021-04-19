@@ -43,6 +43,9 @@ Something like the following:
         data_binding = purpleair_binding
         hostname = purple-air.example.com
         port = 80
+        # how often to fetch purple air data measured in seconds
+        # should match your stations archive interval
+        interval = 300
     [DataBindings]
         [[purpleair_binding]]
             database = purpleair_sqlite

@@ -35,6 +35,7 @@ Add the following to weewx.conf:
     data_binding = purpleair_binding
     hostname = <URL of purpleair sensor> OR <ID# of purpleair sensor>
     port = 80
+    interval = <how often to fetch data in seconds>
 
 [DataBindings]
     [[purpleair_binding]]
