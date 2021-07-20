@@ -194,7 +194,7 @@ def collect_data(session, hostname, port, timeout):
         record['purple_temperature'] = get_and_update_missed('current_temp_f')
         record['purple_humidity'] = get_and_update_missed('current_humidity')
         record['purple_dewpoint'] = get_and_update_missed('current_dewpoint_f')
-    
+
     pressure = get_and_update_missed('pressure')
     if pressure is not None:
         # convert pressure from mbar to US units.
@@ -214,10 +214,14 @@ def collect_data(session, hostname, port, timeout):
             valA = float(j[key])
             valB = float(j[key + '_b'])
         if valA == 0.0 and valB != 0.0:
+            loginf("channel A for %s is missing data" % key)
             record[key] = valB
         elif valB == 0.0 and valA != 0.0:
+            loginf("channel B for %s is missing data" % key)
             record[key] = valA
         else:
+            if abs((valA / valB) - 1) > 0.2:
+                logerr("sensor error %s disagree. %f vs %f " % (key, valA, valB))
             record[key] = (valA + valB) / 2.0
     return record
 
