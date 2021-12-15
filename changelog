@@ -1,3 +1,7 @@
+0.7 20211214
+* removed noisy logging of mismatched data, and divide by zero error in
+  cases where where both senors read 0 (reverts #20)
+
 0.6 20210720
 * added logging around mismatched data #20
 
