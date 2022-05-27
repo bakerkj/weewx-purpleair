@@ -114,6 +114,19 @@ schema = [
     ('pm2_5_atm','REAL'),
     ('pm10_0_cf_1','REAL'),
     ('pm10_0_atm','REAL'),
+
+    ('pm1_0_cf_1_a','REAL'),
+    ('pm1_0_atm_a','REAL'),
+    ('pm2_5_cf_1_a','REAL'),
+    ('pm2_5_atm_a','REAL'),
+    ('pm10_0_cf_1_a','REAL'),
+    ('pm10_0_atm_a','REAL'),
+    ('pm1_0_cf_1_b','REAL'),
+    ('pm1_0_atm_b','REAL'),
+    ('pm2_5_cf_1_b','REAL'),
+    ('pm2_5_atm_b','REAL'),
+    ('pm10_0_cf_1_b','REAL'),
+    ('pm10_0_atm_b','REAL'),
     ]
 
 
@@ -194,7 +207,7 @@ def collect_data(session, hostname, port, timeout):
         record['purple_temperature'] = get_and_update_missed('current_temp_f')
         record['purple_humidity'] = get_and_update_missed('current_humidity')
         record['purple_dewpoint'] = get_and_update_missed('current_dewpoint_f')
-    
+
     pressure = get_and_update_missed('pressure')
     if pressure is not None:
         # convert pressure from mbar to US units.
@@ -219,6 +232,9 @@ def collect_data(session, hostname, port, timeout):
             record[key] = valA
         else:
             record[key] = (valA + valB) / 2.0
+
+        record[key + '_a'] = valA
+        record[key + '_b'] = valB
     return record
 
 
