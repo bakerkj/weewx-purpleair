@@ -36,6 +36,7 @@ Add the following to weewx.conf:
     hostname = <URL of purpleair sensor> OR <ID# of purpleair sensor>
     port = 80
     interval = <how often to fetch data in seconds>
+    api_key = <Read API key retrieved from PurpleAir support (contact@purpleair.com)>
 
 [DataBindings]
     [[purpleair_binding]]
@@ -67,7 +68,7 @@ import weeutil.weeutil
 from weewx.engine import StdService
 import weewx.units
 
-WEEWX_PURPLEAIR_VERSION = "0.4"
+WEEWX_PURPLEAIR_VERSION = "0.8"
 
 PY3 = sys.version_info[0] == 3
 
@@ -155,23 +156,27 @@ def collect_data(session, hostname, port, timeout):
 
     # fetching data from www.purpleair.com
     if hostname.isnumeric():
-        r = session.get(url="https://www.purpleair.com/json?show=%s" % (hostname), timeout=timeout)
+        r = session.get(url="https://api.purpleair.com/v1/sensors/%s?api_key=%s" % (hostname, api_key), timeout=timeout)
         is_data_from_purpleair_website = True
 
     # fetching data from local device
     else:
         r = session.get(url="http://%s:%s/json" % (hostname, port), timeout=timeout)
         is_data_from_purpleair_website = False
+        
+    # update data only when "last_seen/response_date" is not older than 10 minutes - makes sense for purpleair website only
+    valid_timeout = 600
 
     # raise error if status is invalid
     r.raise_for_status()
     # convert to json
     if is_data_from_purpleair_website:
         rj = r.json()
-        j = rj['results'][0]
-        k = rj['results'][1]
+        j = rj['sensor']
+        LastSeen = j['last_seen']
     else:
         j = r.json()
+        LastSeen = j['response_date']
 
     record = dict()
     record['dateTime'] = int(time.time())
@@ -188,7 +193,7 @@ def collect_data(session, hostname, port, timeout):
             return None
 
     if is_data_from_purpleair_website:
-        record['purple_temperature'] = get_and_update_missed('temp_f')
+        record['purple_temperature'] = get_and_update_missed('temperature')
         record['purple_humidity'] = get_and_update_missed('humidity')
     else:
         record['purple_temperature'] = get_and_update_missed('current_temp_f')
@@ -204,21 +209,28 @@ def collect_data(session, hostname, port, timeout):
 
     if missed:
         loginf("sensor didn't report field(s): %s" % ','.join(missed))
+        
+    #when Lastseen field is older than 10 minutes do not return any particles data
+    if (int(time.time()) - int(LastSeen) < valid_timeout):
+        # for each concentration counter grab the average of the A and B channels and push into the record
+        
+        # NEWLY are values from PA website json with dot so it´s necessary to remap it
+        remap_dot = {'pm1_0_cf_1':'pm1.0_cf_1','pm1_0_atm':'pm1.0_atm','pm2_5_cf_1':'pm2.5_cf_1',\
+                   'pm2_5_atm':'pm2.5_atm','pm10_0_cf_1':'pm10.0_cf_1','pm10_0_atm':'pm10.0_atm'}
 
-    # for each concentration counter grab the average of the A and B channels and push into the record
-    for key in ['pm1_0_cf_1', 'pm1_0_atm', 'pm2_5_cf_1', 'pm2_5_atm', 'pm10_0_cf_1', 'pm10_0_atm']:
-        if is_data_from_purpleair_website:
-            valA = float(j[key])
-            valB = float(k[key])
-        else:
-            valA = float(j[key])
-            valB = float(j[key + '_b'])
-        if valA == 0.0 and valB != 0.0:
-            record[key] = valB
-        elif valB == 0.0 and valA != 0.0:
-            record[key] = valA
-        else:
-            record[key] = (valA + valB) / 2.0
+        for key in ['pm1_0_cf_1', 'pm1_0_atm', 'pm2_5_cf_1', 'pm2_5_atm', 'pm10_0_cf_1', 'pm10_0_atm']:
+            if is_data_from_purpleair_website:
+                valA = float(j[remap_dot[key] + '_a'])
+                valB = float(j[remap_dot[key] + '_b'])
+            else:
+                valA = float(j[key])
+                valB = float(j[key + '_b'])
+            if valA == 0.0 and valB != 0.0:
+                record[key] = valB
+            elif valB == 0.0 and valA != 0.0:
+                record[key] = valA
+            else:
+                record[key] = (valA + valB) / 2.0
     return record
 
 
@@ -232,6 +244,7 @@ class PurpleAirMonitor(StdService):
         self.config_dict = config_dict.get('PurpleAirMonitor', {})
         try:
             self.config_dict['hostname']
+            self.config_dict['api_key']
         except KeyError as e:
             raise Exception("Data will not be posted: Missing option %s" % e)
 
@@ -320,7 +333,8 @@ class PurpleAirMonitorDataThread(threading.Thread):
                 if not last_ts or time.time() - last_ts >= weeutil.weeutil.to_int(self.config_dict['interval']):
                     record = collect_data(session, self.config_dict['hostname'],
                                           weeutil.weeutil.to_int(self.config_dict['port']),
-                                          weeutil.weeutil.to_int(self.config_dict['timeout']))
+                                          weeutil.weeutil.to_int(self.config_dict['timeout']),
+                                          self.config_dict['api_key'])
                     record['interval'] = int(weeutil.weeutil.to_int(self.config_dict['interval']) / 60)
 
                     with self._lock:
