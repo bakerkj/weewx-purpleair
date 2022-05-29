@@ -150,7 +150,7 @@ except ImportError:
         logmsg(syslog.LOG_ERR, msg)
 
 
-def collect_data(session, hostname, port, timeout):
+def collect_data(session, hostname, port, timeout, api_key):
     if isinstance(hostname, binary_type):
         hostname = hostname.decode('utf-8')
 
