@@ -36,6 +36,7 @@ Add the following to weewx.conf:
     hostname = <URL of purpleair sensor> OR <ID# of purpleair sensor>
     port = 80
     interval = <how often to fetch data in seconds>
+    ### optional
     api_key = <Read API key retrieved from PurpleAir support (contact@purpleair.com)>
 
 [DataBindings]
@@ -244,13 +245,15 @@ class PurpleAirMonitor(StdService):
         self.config_dict = config_dict.get('PurpleAirMonitor', {})
         try:
             self.config_dict['hostname']
-            self.config_dict['api_key']
+            if self.config_dict['hostname'].isnumeric():
+                self.config_dict['api_key']
         except KeyError as e:
             raise Exception("Data will not be posted: Missing option %s" % e)
 
         self.config_dict.setdefault('port', 80) # default port is HTTP
         self.config_dict.setdefault('timeout', 10) # url fetch timeout
         self.config_dict.setdefault('interval', 300) # how often to fetch data
+        self.config_dict.setdefault('api_key', 'API_KEY') # API_KEY to get data from PurpleAir website
 
         # get the database parameters we need to function
         binding = self.config_dict.get('data_binding', 'purpleair_binding')
