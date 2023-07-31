@@ -1,3 +1,7 @@
+0.8 20230731
+* switch to new PurpleAir API (thanks to xslima00)
+* do not capture stale particle sensor data (thanks to xslima00)
+
 0.7 20211214
 * removed noisy logging of mismatched data, and divide by zero error in
   cases where where both senors read 0 (reverts #20)
