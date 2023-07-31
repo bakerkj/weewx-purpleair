@@ -165,7 +165,7 @@ def collect_data(session, hostname, port, timeout, api_key):
     else:
         r = session.get(url="http://%s:%s/json" % (hostname, port), timeout=timeout)
         is_data_from_purpleair_website = False
-        
+
     # update data only when "last_seen/response_date" is not older than 10 minutes - makes sense for purpleair website only
     valid_timeout = datetime.timedelta(minutes=10)
 
@@ -211,11 +211,11 @@ def collect_data(session, hostname, port, timeout, api_key):
 
     if missed:
         loginf("sensor didn't report field(s): %s" % ','.join(missed))
-        
+
     # when last seen field is older than 10 minutes do not return any particle data
     if datetime.datetime.utcnow() - last_seen < valid_timeout:
         # for each concentration counter grab the average of the A and B channels and push into the record
-        
+
         # NEWLY are values from PA website json with dot so it´s necessary to remap it
         remap_dot = {'pm1_0_cf_1':'pm1.0_cf_1','pm1_0_atm':'pm1.0_atm','pm2_5_cf_1':'pm2.5_cf_1',\
                    'pm2_5_atm':'pm2.5_atm','pm10_0_cf_1':'pm10.0_cf_1','pm10_0_atm':'pm10.0_atm'}
