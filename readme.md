@@ -1,6 +1,6 @@
 # Purple Air - collect Purple Air air quality data
 
-Copyright 2021 - Kenneth Baker <bakerkj@umich.edu>
+Copyright 2021-2023 - Kenneth Baker <bakerkj@umich.edu>
 
 ## What is it?
 purpleair is a weewx extension to collect data from the local
