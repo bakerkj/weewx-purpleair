@@ -63,6 +63,7 @@ import configobj
 import threading
 import socket
 import math
+import datetime
 
 import weewx
 import weeutil.weeutil
@@ -166,7 +167,7 @@ def collect_data(session, hostname, port, timeout, api_key):
         is_data_from_purpleair_website = False
         
     # update data only when "last_seen/response_date" is not older than 10 minutes - makes sense for purpleair website only
-    valid_timeout = 600
+    valid_timeout = datetime.timedelta(minutes=10)
 
     # raise error if status is invalid
     r.raise_for_status()
@@ -174,10 +175,10 @@ def collect_data(session, hostname, port, timeout, api_key):
     if is_data_from_purpleair_website:
         rj = r.json()
         j = rj['sensor']
-        LastSeen = j['last_seen']
+        last_seen = datetime.datetime.fromtimestamp(j['last_seen'])
     else:
         j = r.json()
-        LastSeen = j['response_date']
+        last_seen = datetime.datetime.fromtimestamp(j['response_date'])
 
     record = dict()
     record['dateTime'] = int(time.time())
@@ -211,8 +212,8 @@ def collect_data(session, hostname, port, timeout, api_key):
     if missed:
         loginf("sensor didn't report field(s): %s" % ','.join(missed))
         
-    #when Lastseen field is older than 10 minutes do not return any particles data
-    if (int(time.time()) - int(LastSeen) < valid_timeout):
+    # when last seen field is older than 10 minutes do not return any particle data
+    if datetime.datetime.now() - last_sceen < valid_timeout:
         # for each concentration counter grab the average of the A and B channels and push into the record
         
         # NEWLY are values from PA website json with dot so it´s necessary to remap it
