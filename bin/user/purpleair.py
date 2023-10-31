@@ -227,8 +227,12 @@ def collect_data(session, hostname, port, timeout, api_key):
         # for each concentration counter grab the average of the A and B channels and push into the record
 
         # NEWLY are values from PA website json with dot so it´s necessary to remap it
-        remap_dot = {'pm1_0_cf_1':'pm1.0_cf_1','pm1_0_atm':'pm1.0_atm','pm2_5_cf_1':'pm2.5_cf_1',\
-                   'pm2_5_atm':'pm2.5_atm','pm10_0_cf_1':'pm10.0_cf_1','pm10_0_atm':'pm10.0_atm'}
+        remap_dot = {'pm1_0_cf_1':'pm1.0_cf_1',
+                     'pm1_0_atm':'pm1.0_atm',
+                     'pm2_5_cf_1':'pm2.5_cf_1',
+                     'pm2_5_atm':'pm2.5_atm',
+                     'pm10_0_cf_1':'pm10.0_cf_1',
+                     'pm10_0_atm':'pm10.0_atm'}
 
         for key in ['pm1_0_cf_1', 'pm1_0_atm', 'pm2_5_cf_1', 'pm2_5_atm', 'pm10_0_cf_1', 'pm10_0_atm']:
             if is_data_from_purpleair_website:
