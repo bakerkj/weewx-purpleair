@@ -159,10 +159,15 @@ def collect_data(session, hostname, port, timeout, api_key):
     # fetching data from www.purpleair.com
     if hostname.isnumeric():
         # get only required fields to save purpleair API points
-        api_fields = "temperature,humidity,pressure,last_seen,pm1.0_cf_1_a,pm1.0_cf_1_b,pm1.0_atm_a,pm1.0_atm_b,pm2.5_cf_1_a,\
-        pm2.5_cf_1_b,pm2.5_atm_a,pm2.5_atm_b,pm10.0_cf_1_a,pm10.0_cf_1_b,pm10.0_atm_a,pm10.0_atm_b"
+        api_fields = ["temperature", "humidity", "pressure", "last_seen",
+                      "pm1.0_cf_1_a", "pm1.0_cf_1_b",
+                      "pm1.0_atm_a", "pm1.0_atm_b",
+                      "pm2.5_cf_1_a", "pm2.5_cf_1_b",
+                      "pm2.5_atm_a", "pm2.5_atm_b",
+                      "pm10.0_cf_1_a", "pm10.0_cf_1_b",
+                      "pm10.0_atm_a", "pm10.0_atm_b"]
 
-        url = "https://api.purpleair.com/v1/sensors/%s?api_key=%s&fields=%s" % (hostname, api_key, api_fields)
+        url = "https://api.purpleair.com/v1/sensors/%s?api_key=%s&fields=%s" % (hostname, api_key, ",".join(api_fields))
         r = session.get(url, timeout=timeout)
         is_data_from_purpleair_website = True
 
