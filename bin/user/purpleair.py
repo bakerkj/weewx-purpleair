@@ -405,21 +405,23 @@ if __name__ == "__main__":
                           help="port to use with --test-collector. Default is '80'")
         parser.add_option('--test-service', dest='ts', action='store_true',
                           help='test the service')
+        parser.add_option('--api-key', dest='api_key', action='store',
+                          help='purple air website api key', default=None)
         (options, args) = parser.parse_args()
 
         if options.tc:
             if not options.hostname:
                 parser.error("--test-collector requires --hostname argument")
-            test_collector(options.hostname, options.port)
+            test_collector(options.hostname, options.port, options.api_key)
         elif options.ts:
             if not options.hostname:
                 parser.error("--test-service requires --hostname argument")
             test_service(options.hostname, options.port)
 
-    def test_collector(hostname, port):
+    def test_collector(hostname, port, apikey):
         session = requests.Session()
         while True:
-            print (collect_data(session, hostname, port, 10))
+            print (collect_data(session, hostname, port, 10, apikey))
             time.sleep(5)
 
     def test_service(hostname, port):
