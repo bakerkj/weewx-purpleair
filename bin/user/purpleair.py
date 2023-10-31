@@ -70,7 +70,7 @@ import weeutil.weeutil
 from weewx.engine import StdService
 import weewx.units
 
-WEEWX_PURPLEAIR_VERSION = "0.8"
+WEEWX_PURPLEAIR_VERSION = "0.9"
 
 PY3 = sys.version_info[0] == 3
 

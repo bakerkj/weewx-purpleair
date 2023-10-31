@@ -1,3 +1,7 @@
+0.9 20231031
+* limit the number of api fields requested from PurpleAir API (thanks to xslima00)
+* switch to using X-API-Key header for PurpleAir API
+
 0.8 20230731
 * switch to new PurpleAir API (thanks to xslima00)
 * do not capture stale particle sensor data (thanks to xslima00)
