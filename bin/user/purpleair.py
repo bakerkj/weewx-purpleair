@@ -167,8 +167,8 @@ def collect_data(session, hostname, port, timeout, api_key):
                       "pm10.0_cf_1_a", "pm10.0_cf_1_b",
                       "pm10.0_atm_a", "pm10.0_atm_b"]
 
-        url = "https://api.purpleair.com/v1/sensors/%s?api_key=%s&fields=%s" % (hostname, api_key, ",".join(api_fields))
-        r = session.get(url, timeout=timeout)
+        url = "https://api.purpleair.com/v1/sensors/%s?fields=%s" % (hostname, ",".join(api_fields))
+        r = session.get(url, timeout=timeout, headers= {'X-API-Key': api_key})
         is_data_from_purpleair_website = True
 
     # fetching data from local device
