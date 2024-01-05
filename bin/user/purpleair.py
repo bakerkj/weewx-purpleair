@@ -310,7 +310,7 @@ class PurpleAirMonitor(StdService):
             logdbg("Skipping record: empty")
         else:
             delta = math.fabs(record['dateTime'] - event.record['dateTime'])
-            if delta > self.config_dict['interval'] * 1.5:
+            if delta > weeutil.weeutil.to_int(self.config_dict['interval']) * 1.5:
                 logdbg("Skipping record: time difference %f too big" % delta)
             else:
                 self.save_data(record)
