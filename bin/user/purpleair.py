@@ -188,7 +188,13 @@ def collect_data(session, hostname, port, timeout, api_key):
         last_seen = datetime.datetime.utcfromtimestamp(j['last_seen'])
     else:
         j = r.json()
-        last_seen = datetime.datetime.utcfromtimestamp(j['response_date'])
+        if 'response_date' in j:
+            last_seen = datetime.datetime.utcfromtimestamp(j['response_date'])
+        elif 'DateTime' in j:
+            last_seen = datetime.datetime.strptime(j['DateTime'], "%Y/%m/%dT%H:%M:%Sz")
+        else:
+            loginf("sensor didn't report time field")
+            last_seen = None
 
     record = dict()
     record['dateTime'] = int(time.time())
@@ -223,7 +229,7 @@ def collect_data(session, hostname, port, timeout, api_key):
         loginf("sensor didn't report field(s): %s" % ','.join(missed))
 
     # when last seen field is older than 10 minutes do not return any particle data
-    if datetime.datetime.utcnow() - last_seen < valid_timeout:
+    if last_seen is not None and datetime.datetime.utcnow() - last_seen < valid_timeout:
         # for each concentration counter grab the average of the A and B channels and push into the record
 
         # NEWLY are values from PA website json with dot so it´s necessary to remap it
@@ -247,6 +253,9 @@ def collect_data(session, hostname, port, timeout, api_key):
                 record[key] = valA
             else:
                 record[key] = (valA + valB) / 2.0
+
+    logdbg("record: ", record)
+
     return record
 
 
