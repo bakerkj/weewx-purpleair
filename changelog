@@ -1,3 +1,8 @@
+0.10 20260613
+* require weewx 4.0; use its built-in concentration unit (drops the
+  redundant USUnits / MetricUnits / default_unit_format_dict /
+  default_unit_label_dict registrations for microgram_per_meter_cubed)
+
 0.9 20231031
 * limit the number of api fields requested from PurpleAir API (thanks to xslima00)
 * switch to using X-API-Key header for PurpleAir API

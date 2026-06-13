@@ -70,7 +70,7 @@ import weeutil.weeutil
 from weewx.engine import StdService
 import weewx.units
 
-WEEWX_PURPLEAIR_VERSION = "0.9"
+WEEWX_PURPLEAIR_VERSION = "0.10"
 
 PY3 = sys.version_info[0] == 3
 
@@ -80,16 +80,15 @@ else:
     binary_type = str
 
 
-if weewx.__version__ < "3":
-    raise weewx.UnsupportedFeature("weewx 3 is required, found %s" %
-                                   weewx.__version__)
+if weewx.__version__ < "4":
+    raise weewx.UnsupportedFeature(
+        "weewx 4.0 is required (built-in group_concentration / "
+        "microgram_per_meter_cubed), found %s" % weewx.__version__)
 
-# set up appropriate units
-weewx.units.USUnits['group_concentration'] = 'microgram_per_meter_cubed'
-weewx.units.MetricUnits['group_concentration'] = 'microgram_per_meter_cubed'
-weewx.units.MetricWXUnits['group_concentration'] = 'microgram_per_meter_cubed'
-weewx.units.default_unit_format_dict['microgram_per_meter_cubed'] = '%.3f'
-weewx.units.default_unit_label_dict['microgram_per_meter_cubed']  = u'µg/m³'
+# weewx 4.0+ ships group_concentration / microgram_per_meter_cubed and
+# the unsuffixed pm1_0/pm2_5/pm10_0 → group_concentration mappings, plus
+# the default StringFormat and Label. Only the purpleair-specific suffix
+# variants (`_cf_1`, `_atm`) need registration here.
 
 # assign types of units to specific measurements
 weewx.units.obs_group_dict['purple_temperature'] = 'group_temperature'
